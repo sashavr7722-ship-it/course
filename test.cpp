@@ -12,25 +12,21 @@ void test_findPersonalData() {
     assert(!results1.empty());
     std::cout << "✓ Телефон найден: " << std::get<1>(results1[0]) << "\n";
     
-
     std::string test2 = "user@example.com";
     auto results2 = findPersonalDataWithWeight(test2);
     assert(!results2.empty());
     std::cout << "✓ Email найден: " << std::get<1>(results2[0]) << "\n";
-    
     
     std::string test3 = "25.12.1990";
     auto results3 = findPersonalDataWithWeight(test3);
     assert(!results3.empty());
     std::cout << "✓ Дата найдена: " << std::get<1>(results3[0]) << "\n";
     
-    
     std::string test4 = "1234567890";
     auto results4 = findPersonalDataWithWeight(test4);
     assert(!results4.empty());
     std::cout << "✓ Номер паспорта/ИНН найден: " << std::get<1>(results4[0]) << "\n";
     
-
     std::string test5 = "simple_login";
     auto results5 = findPersonalDataWithWeight(test5);
     std::cout << "✓ Безопасный логин проверен\n";
@@ -41,13 +37,11 @@ void test_findPersonalData() {
 void test_checkSingleLogin() {
     std::cout << "=== Тестирование checkSingleLogin ===\n";
     
-
     std::string login1 = "user79001234567";
     auto [results1, weight1] = checkSingleLogin(login1);
     std::cout << "Логин '" << login1 << "' имеет вес: " << weight1 << "\n";
     assert(weight1 > 0);
-
-
+    
     std::string login3 = "test@mail.com";
     auto [results3, weight3] = checkSingleLogin(login3);
     std::cout << "Логин '" << login3 << "' имеет вес: " << weight3 << "\n";
@@ -57,8 +51,8 @@ void test_checkSingleLogin() {
 }
 
 void test_checkAllLoginsInFile() {
+    std::cout << "=== Тестирование checkAllLoginsInFile ===\n";
     
-    // Создаём временный тестовый файл
     std::string test_filename = "test_logins.txt";
     std::ofstream test_file(test_filename);
     if (!test_file.is_open()) {
@@ -82,16 +76,13 @@ void test_checkAllLoginsInFile() {
     std::cout << "Все тесты checkAllLoginsInFile пройдены!\n\n";
 }
 
-
 int main() {
-    std::cout << "Запуск модульных тестов для Security Checker\n";
-
+    std::cout << "Запуск модульных тестов для Security Checker\n\n";
     
     test_findPersonalData();
     test_checkSingleLogin();
     test_checkAllLoginsInFile();
     
-
     std::cout << "✅ ВСЕ ТЕСТЫ УСПЕШНО ПРОЙДЕНЫ!\n";
     
     return 0;

@@ -14,7 +14,7 @@ struct AppData {
     GtkWidget *window;
     GtkWidget *file_chooser_button;
     GtkWidget *login_entry;
-    GtkWidget *check_single_button;      // Только для одного логина
+    GtkWidget *check_single_button;
     GtkWidget *result_textview;
     GtkWidget *status_label;
     GtkWidget *security_level_box;
@@ -99,7 +99,6 @@ void updateResults(AppData *app_data,
     updateSecurityIndicator(app_data, weight);
 }
 
-
 void on_check_single_clicked(GtkWidget *widget, gpointer data) {
     AppData *app_data = static_cast<AppData*>(data);
     
@@ -137,7 +136,6 @@ void on_check_single_clicked(GtkWidget *widget, gpointer data) {
     }).detach();
 }
 
-
 void on_check_all_clicked(GtkWidget *widget, gpointer data) {
     AppData *app_data = static_cast<AppData*>(data);
     
@@ -168,6 +166,11 @@ void on_check_all_clicked(GtkWidget *widget, gpointer data) {
         g_idle_add([](gpointer user_data) -> gboolean {
             CallbackData *data = static_cast<CallbackData*>(user_data);
             updateResults(data->app_data, data->results, data->weight);
+            
+            // Показываем уведомление о сохранении файла
+            std::string status = "✅ Проверка завершена! Результаты сохранены в файл отчёта.";
+            gtk_label_set_text(GTK_LABEL(data->app_data->status_label), status.c_str());
+            
             delete data;
             return FALSE;
         }, cb_data);
@@ -288,7 +291,6 @@ int main(int argc, char *argv[]) {
     GtkWidget *button_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
     gtk_box_pack_start(GTK_BOX(vbox), button_box, FALSE, FALSE, 5);
     
-    // Только две кнопки: проверка одного логина и проверка всех из файла
     app_data->check_single_button = gtk_button_new_with_label("🔍 Проверить один логин");
     gtk_box_pack_start(GTK_BOX(button_box), app_data->check_single_button, TRUE, TRUE, 0);
     

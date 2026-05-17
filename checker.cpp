@@ -3,6 +3,9 @@
 #include <fstream>
 #include <algorithm>
 #include <iostream>
+#include <ctime>
+#include <chrono>
+#include <iomanip>
 
 std::vector<std::tuple<std::string, std::string, int>> findPersonalDataWithWeight(const std::string& text) {
     std::vector<std::tuple<std::string, std::string, int>> results;
@@ -59,6 +62,118 @@ int calculateSecurityLevel(const std::vector<std::tuple<std::string, std::string
         total_weight += std::get<2>(finding);
     }
     return total_weight;
+}
+
+
+bool saveResultsToFile(const std::vector<std::tuple<std::string, std::string, int>>& results, 
+                       int weight, 
+                       const std::string& input_filename,
+                       const std::string& report_type) {
+    
+    // Создаём имя файла с отчётом
+    auto now = std::time(nullptr);
+    auto tm = *std::localtime(&now);
+    char filename[512];
+    
+    if (report_type == "single") {
+     
+        std::string login = input_filename;
+        for (char& c : login) {
+            if (!isalnum(c) && c != '.' && c != '_' && c != '-') c = '_';
+        }
+        std::strftime(filename, sizeof(filename), ("report_" + login + "_%Y-%m-%d_%H-%M-%S.txt").c_str(), &tm);
+    } else {
+        
+        std::string base_name = input_filename;
+        size_t last_slash = base_name.find_last_of("/\\");
+        if (last_slash != std::string::npos) {
+            base_name = base_name.substr(last_slash + 1);
+        }
+        size_t last_dot = base_name.find_last_of(".");
+        if (last_dot != std::string::npos) {
+            base_name = base_name.substr(0, last_dot);
+        }
+        std::strftime(filename, sizeof(filename), ("report_" + base_name + "_%Y-%m-%d_%H-%M-%S.txt").c_str(), &tm);
+    }
+    
+    
+    std::ofstream report_file(filename);
+    if (!report_file.is_open()) {
+        return false;
+    }
+    
+
+    report_file << "═══════════════════════════════════════════════════════════════\n";
+    report_file << "                 ОТЧЁТ О ПРОВЕРКЕ БЕЗОПАСНОСТИ\n";
+    report_file << "═══════════════════════════════════════════════════════════════\n\n";
+    
+    char time_str[100];
+    std::strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", &tm);
+    report_file << "📅 Дата и время: " << time_str << "\n";
+    
+    if (report_type == "single") {
+        report_file << "🔍 Тип проверки: ОДИН ЛОГИН\n";
+        report_file << "📝 Проверенный логин: " << input_filename << "\n";
+    } else {
+        report_file << "📊 Тип проверки: ФАЙЛ С ЛОГИНАМИ\n";
+        report_file << "📁 Исходный файл: " << input_filename << "\n";
+    }
+    
+    report_file << "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+    report_file << "                      РЕЗУЛЬТАТЫ ПРОВЕРКИ\n";
+    report_file << "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
+    
+    
+    for (const auto& result : results) {
+        std::string type = std::get<0>(result);
+        std::string value = std::get<1>(result);
+        int w = std::get<2>(result);
+        
+        // Пропускаем пустые разделители
+        if (type.empty() && value == "---") {
+            report_file << "\n---\n\n";
+            continue;
+        }
+        
+       
+        std::string symbol;
+        if (w >= 8) {
+            symbol = "🔴";
+        } else if (w >= 4) {
+            symbol = "🟡";
+        } else if (w > 0) {
+            symbol = "🟢";
+        } else {
+            symbol = "⚪";
+        }
+        
+        report_file << symbol << " [" << type << "]: " << value << "\n";
+    }
+    
+    // Записываем итоговый уровень риска
+    report_file << "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+    report_file << "                      ИТОГОВАЯ ОЦЕНКА\n";
+
+    
+    std::string risk_level;
+    if (weight == 0) {
+        risk_level = "🟢 БЕЗОПАСНО";
+    } else if (weight < 20) {
+        risk_level = "🟡 СРЕДНИЙ РИСК";
+    } else {
+        risk_level = "🔴 ВЫСОКИЙ РИСК";
+    }
+    
+    report_file << "Уровень риска: " << risk_level << "\n";
+    report_file << "Общий вес угроз: " << weight << "\n";
+    
+    report_file << "\n═══════════════════════════════════════════════════════════════\n";
+    report_file << "Отчёт создан программой Security Checker\n";
+
+    report_file.close();
+    
+    std::cout << "Отчёт сохранён в файл: " << filename << std::endl;
+    return true;
 }
 
 std::pair<std::vector<std::tuple<std::string, std::string, int>>, int> checkSingleLogin(const std::string& login) {
@@ -150,6 +265,8 @@ std::pair<std::vector<std::tuple<std::string, std::string, int>>, int> checkAllL
     } else {
         results.push_back(std::make_tuple("🔴 ИТОГО", "Файл содержит критический уровень риска!", 0));
     }
+    
+    saveResultsToFile(results, total_weight, filename, "file");
     
     return {results, total_weight};
 }
