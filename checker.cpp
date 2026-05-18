@@ -12,6 +12,8 @@ std::vector<std::tuple<std::string, std::string, int>> findPersonalDataWithWeigh
     
     try {
         std::vector<std::pair<std::regex, std::pair<std::string, int>>> patterns = {
+            {std::regex(R"([A-Z][a-z]+[A-Z][a-z]+[A-Z][a-z]+)"), {"ФИО слитно (IvanovIvanIvanovich)", 9}},
+            {std::regex(R"([a-z]+[A-Z][a-z]+[A-Z][a-z]+)"), {"ФИО слитно с маленькой (ivanovIvanIvanovich)", 9}},
             {std::regex(R"(\d{4}\s?\d{6})"), {"Номер паспорта (серия+номер)", 10}},      
             {std::regex(R"(\d{2}\s?\d{2}\s?\d{6})"), {"Паспорт (старый формат)", 10}},     
             {std::regex(R"(\d{10})"), {"ИНН (10 цифр)", 8}},                             
@@ -29,10 +31,8 @@ std::vector<std::tuple<std::string, std::string, int>> findPersonalDataWithWeigh
             {std::regex(R"(\d{2}\.\d{2}\.\d{2})"), {"Дата (ДД.ММ.ГГ)", 4}},                 
             {std::regex(R"(\d{8})"), {"Дата (8 цифр подряд)", 4}},                          
             {std::regex(R"([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})"), {"Email", 3}}, 
-            {std::regex(R"(\d{6})"), {"Почтовый индекс", 2}},                                
-            {std::regex(R"(паспорт\s*\d{4}\s*\d{6})"), {"Паспорт (текст)", 10}},             
+            {std::regex(R"(\d{6})"), {"Почтовый индекс", 2}},                                          
             {std::regex(R"(passport\s*\d{4}\s*\d{6})"), {"Passport (text)", 10}},            
-            {std::regex(R"(серия\s*\d{4}\s*номер\s*\d{6})"), {"Серия/номер паспорта", 10}},  
             {std::regex(R"([A-Za-z]+\d{4,})"), {"Логин: имя+много цифр", 3}},               
             {std::regex(R"(\d{4,}[A-Za-z]+)"), {"Логин: цифры+имя", 3}},                   
             {std::regex(R"([A-Za-z]+\d{2}\.\d{2}\.\d{4})"), {"Логин: имя+дата", 8}},        
